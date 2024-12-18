@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Test</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .quiz-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-content {
+            overflow-y: auto;
+            height: calc(100% - 150px); /* Adjust height as needed */
+            padding-right: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+            cursor: pointer;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            accent-color: #4caf50;
+        }
+
+        .options label:hover {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        .quiz-container button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s ease;
+            margin-top: auto;
+        }
+
+        .quiz-container button:hover {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+            transform: scale(1.05);
+        }
+
+        .quiz-container hr {
+            border: 1px solid #eee;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 25px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-fill {
+            height: 20px;
+            width: 0;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            border-radius: 25px;
+            transition: width 0.5s;
+        }
+
+        @media screen and (max-width: 600px) {
+            .quiz-container {
+                padding: 20px;
+                width: 90%;
+            }
+            h2 {
+                font-size: 22px;
+            }
+            .question {
+                font-size: 18px;
+            }
+            .options label {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h2>Interactive Quiz</h2>
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progress-bar-fill">0%</div>
+        </div>
+        <div class="timer" id="timer">Time Left: 10:00</div>
+
+        <!-- Questions Container -->
+        <div class="quiz-content" id="questions">
+            <!-- Add 10 questions dynamically -->
+            <script>
+                const questionsData = [
+                    { question: "What is the capital of India?", options: ["Delhi", "Mumbai", "Kolkata", "Chennai"] },
+                    { question: "Who is the current Prime Minister of India?", options: ["Narendra Modi", "Rahul Gandhi", "Arvind Kejriwal", "Manmohan Singh"] },
+                    { question: "What is the national animal of India?", options: ["Lion", "Tiger", "Elephant", "Peacock"] },
+                    { question: "What is the largest planet in our Solar System?", options: ["Earth", "Jupiter", "Mars", "Venus"] },
+                    { question: "Who wrote the Indian National Anthem?", options: ["Rabindranath Tagore", "Bankim Chandra Chatterjee", "Mahatma Gandhi", "Subhash Chandra Bose"] },
+                    { question: "What is the boiling point of water in Celsius?", options: ["90°C", "100°C", "110°C", "120°C"] },
+                    { question: "What is the currency of Japan?", options: ["Yen", "Dollar", "Euro", "Rupee"] },
+                    { question: "Who is known as the Father of the Nation in India?", options: ["Mahatma Gandhi", "Jawaharlal Nehru", "Subhash Chandra Bose", "Sardar Patel"] },
+                    { question: "Which element has the chemical symbol 'O'?", options: ["Oxygen", "Gold", "Silver", "Iron"] },
+                    { question: "Which planet is known as the Red Planet?", options: ["Mars", "Venus", "Earth", "Jupiter"] }
+                ];
+
+                const questionsContainer = document.getElementById('questions');
+                questionsData.forEach((item, index) => {
+                    const questionHtml = `
+                        <div class="question">${index + 1}. ${item.question}</div>
+                        <div class="options">
+                            ${item.options.map(option => `<label><input type="radio" name="q${index + 1}" value="${option}"> ${option}</label>`).join("")}
+                        </div>
+                        <hr>
+                    `;
+                    questionsContainer.innerHTML += questionHtml;
+                });
+            </script>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="submitQuiz()">Submit</button>
+    </div>
+
+    <script>
+        // Timer Functionality
+        let timeLeft = 600; // 10 minutes in seconds
+        const timerElement = document.getElementById('timer');
+
+        const timerInterval = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `Time Left: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Submitting your quiz.');
+                submitQuiz();
+            }
+        }, 1000);
+
+        let currentUserId;
+
+        // Fetch the current user ID
+        fetch('/api/users/current')
+            .then(response => response.json())
+            .then(data => {
+                currentUserId = data.id; // Store the user ID
+            })
+            .catch(error => {
+                console.error('Failed to fetch current user:', error);
+                alert('Unable to identify the current user.');
+            });
+
+        function submitQuiz() {
+            if (!currentUserId) {
+                alert('User not identified. Please try again.');
+                return;
+            }
+
+            const totalQuestions = questionsData.length;
+            let score = 0;
+
+            questionsData.forEach((_, index) => {
+                const selectedOption = document.querySelector(`input[name="q${index + 1}"]:checked`);
+                if (selectedOption) {
+                    score++;
+                }
+            });
+
+            const payload = {
+                userId: currentUserId, // Use dynamically fetched user ID
+                score: score,
+                totalQuestions: totalQuestions,
+                appeared: true
+            };
+
+            fetch('/api/users/updateQuiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to submit quiz.');
+                    return response.text();
+                })
+                .then(data => {
+                    alert(data);
+                    window.location.href = '/users'; // Redirect to user list
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                   // alert('An error occurred while submitting the quiz.');
+                });
+        }
+
+        // Progress Bar Functionality
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        const totalQuestions = questionsData.length;
+
+        function updateProgressBar() {
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+            progressBarFill.style.width = `${progressPercentage}%`;
+            progressBarFill.textContent = `${Math.round(progressPercentage)}%`;
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', updateProgressBar);
+        });
+
+        // Auto-submit on visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                alert('You switched tabs! Submitting your quiz.');
+                submitQuiz();
+            }
+        });
+    </script>
+</body>
+</html>
